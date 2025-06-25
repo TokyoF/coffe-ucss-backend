@@ -75,27 +75,9 @@ export const authenticateToken = async (
       return;
     }
 
-    // Verificar que el token no esté revocado en la base de datos
-    const tokenRecord = await prisma.authToken.findFirst({
-      where: {
-        userId: user.id,
-        token: token,
-        isRevoked: false,
-        expiresAt: {
-          gt: new Date(),
-        },
-      },
-    });
-
-    if (!tokenRecord) {
-      res.status(401).json({
-        success: false,
-        error: "Token inválido o expirado",
-        code: "TOKEN_INVALID",
-        timestamp: new Date().toISOString(),
-      });
-      return;
-    }
+    // NOTA: No validamos access tokens en BD, solo refresh tokens
+    // Los access tokens son stateless y se validan solo por JWT
+    // Solo validamos refresh tokens cuando se usan para renovar
 
     // Extender el payload con información adicional
     req.user = {
