@@ -1,0 +1,20 @@
+# docker-compose.yml - COFFE UCSS Backend
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: coffe_ucss_db
+    environment:
+      POSTGRES_ROOT_PASSWORD: coffe123
+      POSTGRES_DB: coffe_ucss_db
+      POSTGRES_USER: coffe_user
+      POSTGRES_PASSWORD: coffe_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

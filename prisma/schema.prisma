@@ -1,0 +1,215 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Modelo de usuarios
+model User {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  password    String
+  firstName   String   @map("first_name")
+  lastName    String   @map("last_name")
+  phone       String?
+  role        Role     @default(CLIENT)
+  isVerified  Boolean  @default(false) @map("is_verified")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  orders        Order[]
+  favorites     Favorite[]
+  notifications Notification[]
+  authTokens    AuthToken[]
+
+  @@map("users")
+}
+
+// Enum para roles
+enum Role {
+  CLIENT
+  ADMIN
+
+  @@map("roles")
+}
+
+// Tokens de autenticación
+model AuthToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  token     String
+  expiresAt DateTime @map("expires_at")
+  isRevoked Boolean  @default(false) @map("is_revoked")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relaciones
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("auth_tokens")
+}
+
+// Categorías de productos
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relaciones
+  products Product[]
+
+  @@map("categories")
+}
+
+// Productos
+model Product {
+  id          Int     @id @default(autoincrement())
+  categoryId  Int     @map("category_id")
+  name        String
+  description String?
+  price       Decimal @db.Decimal(8, 2)
+  imageUrl    String? @map("image_url")
+  rating      Decimal @default(0) @db.Decimal(2, 1)
+  isAvailable Boolean @default(true) @map("is_available")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  category       Category       @relation(fields: [categoryId], references: [id])
+  customizations Customization[]
+  orderItems     OrderItem[]
+  favorites      Favorite[]
+
+  @@map("products")
+}
+
+// Personalizaciones de productos
+model Customization {
+  id         Int     @id @default(autoincrement())
+  productId  Int     @map("product_id")
+  name       String
+  type       String
+  options    Json
+  isRequired Boolean @default(false) @map("is_required")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relaciones
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("customizations")
+}
+
+// Pedidos
+model Order {
+  id               Int         @id @default(autoincrement())
+  userId           Int         @map("user_id")
+  status           OrderStatus @default(PENDING)
+  deliveryLocation String      @map("delivery_location")
+  paymentMethod    PaymentMethod @map("payment_method")
+  subtotal         Decimal     @db.Decimal(8, 2)
+  deliveryFee      Decimal     @default(1.00) @db.Decimal(8, 2) @map("delivery_fee")
+  total            Decimal     @db.Decimal(8, 2)
+  notes            String?
+  createdAt        DateTime    @default(now()) @map("created_at")
+  updatedAt        DateTime    @updatedAt @map("updated_at")
+
+  // Relaciones
+  user          User           @relation(fields: [userId], references: [id])
+  orderItems    OrderItem[]
+  notifications Notification[]
+
+  @@map("orders")
+}
+
+// Estados de pedido
+enum OrderStatus {
+  PENDING
+  PREPARING
+  READY
+  DELIVERED
+  CANCELLED
+
+  @@map("order_status")
+}
+
+// Métodos de pago
+enum PaymentMethod {
+  YAPE
+  PLIN
+  TUNKI
+  CASH
+
+  @@map("payment_methods")
+}
+
+// Items del pedido
+model OrderItem {
+  id             Int     @id @default(autoincrement())
+  orderId        Int     @map("order_id")
+  productId      Int     @map("product_id")
+  quantity       Int     @default(1)
+  unitPrice      Decimal @db.Decimal(8, 2) @map("unit_price")
+  customizations Json?
+  specialNotes   String? @map("special_notes")
+  subtotal       Decimal @db.Decimal(8, 2)
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // Relaciones
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+// Favoritos
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  productId Int      @map("product_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relaciones
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  // Restricción única
+  @@unique([userId, productId])
+  @@map("favorites")
+}
+
+// Notificaciones
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    Int              @map("user_id")
+  title     String
+  message   String
+  type      NotificationType
+  isRead    Boolean          @default(false) @map("is_read")
+  orderId   Int?             @map("order_id")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  // Relaciones
+  user  User   @relation(fields: [userId], references: [id])
+  order Order? @relation(fields: [orderId], references: [id])
+
+  @@map("notifications")
+}
+
+// Tipos de notificación
+enum NotificationType {
+  ORDER
+  PROMO
+  SYSTEM
+
+  @@map("notification_types")
+}
+
