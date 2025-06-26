@@ -8,7 +8,8 @@ import prisma from "./config/database";
 import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
-
+import orderRoutes from "./routes/orderRoutes";
+import notificationRoutes from "./routes/notificationRoutes";
 // Cargar variables de entorno
 dotenv.config();
 
@@ -37,7 +38,8 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
-
+app.use("/api/orders", orderRoutes);
+app.use("/api/notifications", notificationRoutes);
 // ========================================
 // RUTA PRINCIPAL (PÚBLICA)
 // ========================================

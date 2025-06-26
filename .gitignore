@@ -8,7 +8,10 @@ dist/
 .env
 .env.local
 .env.production
-
+.env.http
+.http.env
+test.http
+http-client.private.env.json
 # Logs
 *.log
 npm-debug.log*

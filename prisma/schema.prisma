@@ -89,6 +89,8 @@ model Product {
   orderItems     OrderItem[]
   favorites      Favorite[]
 
+  // Índice único compuesto para evitar productos duplicados en la misma categoría
+  @@unique([categoryId, name], name: "categoryId_name")
   @@map("products")
 }
 
