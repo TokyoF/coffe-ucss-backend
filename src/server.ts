@@ -10,6 +10,7 @@ import productRoutes from "./routes/productRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
 import orderRoutes from "./routes/orderRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
+import favoriteRoutes from "./routes/favoriteRoutes";
 // Cargar variables de entorno
 dotenv.config();
 
@@ -40,6 +41,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/favorites", favoriteRoutes);
 // ========================================
 // RUTA PRINCIPAL (PÚBLICA)
 // ========================================
